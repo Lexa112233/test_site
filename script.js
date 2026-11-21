@@ -144,7 +144,12 @@ orderForm.addEventListener('submit', async (event) => {
   formStatus.textContent = '';
 
   try {
-    const response = await fetch(
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 7000);
+    let response;
+
+    try {
+      response = await fetch(
       CLOUD_FUNCTION_URL,
       {
         method: 'POST',
@@ -158,11 +163,19 @@ orderForm.addEventListener('submit', async (event) => {
             extras: extrasText,
             total: totalOutput.textContent
           }
-        })
-      }
-    );
+        }),
+        signal: controller.signal
+      });
+    } finally {
+      window.clearTimeout(timeout);
+    }
 
-    const result = await response.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (error) {
+      result = {};
+    }
 
     if (!response.ok || !result.ok) {
       throw new Error(result.error || 'Не удалось отправить заказ');
@@ -173,7 +186,9 @@ orderForm.addEventListener('submit', async (event) => {
     orderToast.classList.add('is-visible');
     window.setTimeout(() => orderToast.classList.remove('is-visible'), 4000);
   } catch (error) {
-    formStatus.textContent = 'Не удалось отправить заказ. Проверьте настройки Telegram.';
+    formStatus.textContent = error.name === 'AbortError'
+      ? 'Сервер не ответил вовремя. Повторите отправку.'
+      : (error.message || 'Не удалось отправить заказ. Проверьте настройки Telegram.');
   } finally {
     submitButton.disabled = false;
     submitButtonText.textContent = 'Отправить заказ';
