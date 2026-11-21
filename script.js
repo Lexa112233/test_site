@@ -1,4 +1,4 @@
-const CLOUD_FUNCTION_URL = 'https://functions.yandexcloud.net/d4ef7tqpngn4inqlmb3u';
+const WEB3FORMS_ACCESS_KEY = '8928c3f7-30ff-4f87-8a11-f6ed34ed4da5';
 
 const coffeeInputs = document.querySelectorAll('input[name="coffee"]');
 const sizeInputs = document.querySelectorAll('input[name="size"]');
@@ -133,11 +133,6 @@ orderForm.addEventListener('submit', async (event) => {
     return;
   }
 
-  if (CLOUD_FUNCTION_URL.includes('YOUR_FUNCTION_ID')) {
-    formStatus.textContent = 'Укажите адрес Yandex Cloud Function в CLOUD_FUNCTION_URL.';
-    return;
-  }
-
   const extrasText = extrasOutput.textContent;
   submitButton.disabled = true;
   submitButtonText.textContent = 'Отправляем...';
@@ -150,22 +145,23 @@ orderForm.addEventListener('submit', async (event) => {
 
     try {
       response = await fetch(
-      CLOUD_FUNCTION_URL,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          phone: contact,
-          order: {
+        'https://api.web3forms.com/submit',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_key: WEB3FORMS_ACCESS_KEY,
+            subject: 'Новый заказ с сайта «Бодрое утро»',
+            name,
+            phone: contact,
             drink: drinkOutput.textContent,
             size: sizeOutput.textContent,
             extras: extrasText,
             total: totalOutput.textContent
-          }
-        }),
-        signal: controller.signal
-      });
+          }),
+          signal: controller.signal
+        }
+      );
     } finally {
       window.clearTimeout(timeout);
     }
@@ -177,8 +173,8 @@ orderForm.addEventListener('submit', async (event) => {
       result = {};
     }
 
-    if (!response.ok || !result.ok) {
-      throw new Error(result.error || 'Не удалось отправить заказ');
+    if (!response.ok || result.success !== true) {
+      throw new Error(result.message || 'Не удалось отправить заказ');
     }
 
     closeOrderModal();
@@ -188,7 +184,7 @@ orderForm.addEventListener('submit', async (event) => {
   } catch (error) {
     formStatus.textContent = error.name === 'AbortError'
       ? 'Сервер не ответил вовремя. Повторите отправку.'
-      : (error.message || 'Не удалось отправить заказ. Проверьте настройки Telegram.');
+      : (error.message || 'Не удалось отправить заказ.');
   } finally {
     submitButton.disabled = false;
     submitButtonText.textContent = 'Отправить заказ';
