@@ -1,4 +1,4 @@
-const CLOUD_FUNCTION_URL = 'https://functions.yandexcloud.net/YOUR_FUNCTION_ID';
+const CLOUD_FUNCTION_URL = 'https://functions.yandexcloud.net/d4ef7tqpngn4inqlmb3u';
 
 const coffeeInputs = document.querySelectorAll('input[name="coffee"]');
 const sizeInputs = document.querySelectorAll('input[name="size"]');
