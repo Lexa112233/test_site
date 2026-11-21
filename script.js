@@ -1,5 +1,4 @@
-const TELEGRAM_BOT_TOKEN = '';
-const TELEGRAM_CHAT_ID = '1232199057';
+const CLOUD_FUNCTION_URL = 'https://functions.yandexcloud.net/YOUR_FUNCTION_ID';
 
 const coffeeInputs = document.querySelectorAll('input[name="coffee"]');
 const sizeInputs = document.querySelectorAll('input[name="size"]');
@@ -134,35 +133,31 @@ orderForm.addEventListener('submit', async (event) => {
     return;
   }
 
-  if (TELEGRAM_BOT_TOKEN === 'YOUR_BOT_TOKEN' || TELEGRAM_CHAT_ID === 'YOUR_CHAT_ID') {
-    formStatus.textContent = 'Добавьте TELEGRAM_BOT_TOKEN и TELEGRAM_CHAT_ID в script.js.';
+  if (CLOUD_FUNCTION_URL.includes('YOUR_FUNCTION_ID')) {
+    formStatus.textContent = 'Укажите адрес Yandex Cloud Function в CLOUD_FUNCTION_URL.';
     return;
   }
 
   const extrasText = extrasOutput.textContent;
-  const message = [
-    'Новый заказ с сайта «Бодрое утро»',
-    `Имя: ${name}`,
-    `Контакт: ${contact}`,
-    `Напиток: ${drinkOutput.textContent}`,
-    `Размер: ${sizeOutput.textContent}`,
-    `Добавки: ${extrasText}`,
-    `Сумма: ${totalOutput.textContent}`
-  ].join('\n');
-
   submitButton.disabled = true;
   submitButtonText.textContent = 'Отправляем...';
   formStatus.textContent = '';
 
   try {
     const response = await fetch(
-      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+      CLOUD_FUNCTION_URL,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text: message
+          name,
+          phone: contact,
+          order: {
+            drink: drinkOutput.textContent,
+            size: sizeOutput.textContent,
+            extras: extrasText,
+            total: totalOutput.textContent
+          }
         })
       }
     );
@@ -170,7 +165,7 @@ orderForm.addEventListener('submit', async (event) => {
     const result = await response.json();
 
     if (!response.ok || !result.ok) {
-      throw new Error(result.description || 'Не удалось отправить заказ');
+      throw new Error(result.error || 'Не удалось отправить заказ');
     }
 
     closeOrderModal();
