@@ -13,7 +13,7 @@ const mobileDrinkOutput = document.querySelector('#mobile-order-drink');
 const mobileTotalOutput = document.querySelector('#mobile-order-total');
 const mobileOrderBar = document.querySelector('#mobile-order-bar');
 const coffeeSection = document.querySelector('#coffee');
-const orderCard = document.querySelector('.order-card');
+const mainOrderTotal = document.querySelector('#total-price');
 
 function updateOrder() {
   const coffee = document.querySelector('input[name="coffee"]:checked');
@@ -44,12 +44,12 @@ updateOrder();
 
 const mobileViewport = window.matchMedia('(max-width: 768px)');
 let isCalculatorInView = false;
-let isOrderCardInView = false;
+let isMainTotalInView = false;
 
 function updateMobileOrderBar() {
   mobileOrderBar.classList.toggle(
     'is-visible',
-    mobileViewport.matches && isCalculatorInView && !isOrderCardInView
+    mobileViewport.matches && isCalculatorInView && !isMainTotalInView
   );
 }
 
@@ -59,8 +59,8 @@ if ('IntersectionObserver' in window) {
       if (entry.target === coffeeSection) {
         isCalculatorInView = entry.isIntersecting;
       }
-      if (entry.target === orderCard) {
-        isOrderCardInView = entry.isIntersecting;
+      if (entry.target === mainOrderTotal) {
+        isMainTotalInView = entry.isIntersecting;
       }
     });
 
@@ -70,10 +70,10 @@ if ('IntersectionObserver' in window) {
   });
 
   barObserver.observe(coffeeSection);
-  barObserver.observe(orderCard);
+  barObserver.observe(mainOrderTotal);
 } else {
   isCalculatorInView = false;
-  isOrderCardInView = false;
+  isMainTotalInView = false;
 }
 
 mobileViewport.addEventListener('change', (event) => {
