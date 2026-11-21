@@ -1,4 +1,4 @@
-const WEB3FORMS_ACCESS_KEY = '8928c3f7-30ff-4f87-8a11-f6ed34ed4da5';
+const CLOUDFLARE_WORKER_URL = 'https://solitary-frog-6e19.ialllexeyyy.workers.dev/';
 
 const coffeeInputs = document.querySelectorAll('input[name="coffee"]');
 const sizeInputs = document.querySelectorAll('input[name="size"]');
@@ -133,6 +133,11 @@ orderForm.addEventListener('submit', async (event) => {
     return;
   }
 
+  if (CLOUDFLARE_WORKER_URL.includes('YOUR-WORKER')) {
+    formStatus.textContent = 'Укажите адрес Cloudflare Worker в CLOUDFLARE_WORKER_URL.';
+    return;
+  }
+
   const extrasText = extrasOutput.textContent;
   submitButton.disabled = true;
   submitButtonText.textContent = 'Отправляем...';
@@ -145,13 +150,11 @@ orderForm.addEventListener('submit', async (event) => {
 
     try {
       response = await fetch(
-        'https://api.web3forms.com/submit',
+        CLOUDFLARE_WORKER_URL,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            access_key: WEB3FORMS_ACCESS_KEY,
-            subject: 'Новый заказ с сайта «Бодрое утро»',
             name,
             phone: contact,
             drink: drinkOutput.textContent,
@@ -173,8 +176,8 @@ orderForm.addEventListener('submit', async (event) => {
       result = {};
     }
 
-    if (!response.ok || result.success !== true) {
-      throw new Error(result.message || 'Не удалось отправить заказ');
+    if (!response.ok || result.ok !== true) {
+      throw new Error(result.error || 'Не удалось отправить заказ');
     }
 
     closeOrderModal();
